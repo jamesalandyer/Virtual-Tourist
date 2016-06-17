@@ -26,6 +26,7 @@
 		2B21AD021D13C3810055D286 /* Pin+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B21ACFC1D13C3810055D286 /* Pin+CoreDataProperties.swift */; };
 		2B21AD041D13C3810055D286 /* Album+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B21ACFE1D13C3810055D286 /* Album+CoreDataProperties.swift */; };
 		2B21AD061D13C3810055D286 /* Image+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B21AD001D13C3810055D286 /* Image+CoreDataProperties.swift */; };
+		2B21AD091D1473DB0055D286 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B21AD081D1473DB0055D286 /* MapKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,7 @@
 		2B21ACFC1D13C3810055D286 /* Pin+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "Pin+CoreDataProperties.swift"; path = "../Pin+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		2B21ACFE1D13C3810055D286 /* Album+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "Album+CoreDataProperties.swift"; path = "../Album+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		2B21AD001D13C3810055D286 /* Image+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "Image+CoreDataProperties.swift"; path = "../Image+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		2B21AD081D1473DB0055D286 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B21AD091D1473DB0055D286 /* MapKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +142,7 @@
 				2B21ACEA1D1360B40055D286 /* CoreDataStack.swift */,
 				2B21ACC51D124F520055D286 /* AppDelegate.swift */,
 				2B21ACD11D124F530055D286 /* Info.plist */,
+				2B21AD081D1473DB0055D286 /* MapKit.framework */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -194,6 +198,11 @@
 				TargetAttributes = {
 					2B21ACC11D124F520055D286 = {
 						CreatedOnToolsVersion = 7.3.1;
+						SystemCapabilities = {
+							com.apple.Maps.iOS = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};

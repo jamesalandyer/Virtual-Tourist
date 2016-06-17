@@ -9,10 +9,10 @@
 import CoreData
 
 // MARK:  - TypeAliases
-typealias BatchTask=(workerContext: NSManagedObjectContext) -> ()
+typealias BatchTask = (workerContext: NSManagedObjectContext) -> ()
 
 // MARK:  - Notifications
-enum CoreDataStackNotifications : String{
+enum CoreDataStackNotifications : String {
     case ImportingTaskDidFinish = "ImportingTaskDidFinish"
 }
 // MARK:  - Main
@@ -44,9 +44,8 @@ struct CoreDataStack {
             print("unable to create a model from \(modelURL)")
             return nil
         }
+        
         self.model = model
-        
-        
         
         // Create the store coordinator
         coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
@@ -70,7 +69,7 @@ struct CoreDataStack {
         // Add a SQLite store located in the documents folder
         let fm = NSFileManager.defaultManager()
         
-        guard let  docUrl = fm.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first else{
+        guard let  docUrl = fm.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first else {
             print("Unable to reach the documents folder")
             return nil
         }
@@ -79,14 +78,9 @@ struct CoreDataStack {
         
         
         do{
-            try addStoreTo(coordinator: coordinator,
-                           storeType: NSSQLiteStoreType,
-                           configuration: nil,
-                           storeURL: dbURL,
-                           options: nil)
-            
-        }catch{
-            print("unable to add store at \(dbURL)")
+            try addStoreTo(coordinator: coordinator, storeType: NSSQLiteStoreType, configuration: nil, storeURL: dbURL, options: nil)
+        } catch {
+            print("Unable to add store at \(dbURL)")
         }
         
         
@@ -96,11 +90,7 @@ struct CoreDataStack {
     }
     
     // MARK:  - Utils
-    func addStoreTo(coordinator coord : NSPersistentStoreCoordinator,
-                                storeType: String,
-                                configuration: String?,
-                                storeURL: NSURL,
-                                options : [NSObject : AnyObject]?) throws{
+    func addStoreTo(coordinator coord : NSPersistentStoreCoordinator, storeType: String, configuration: String?, storeURL: NSURL, options : [NSObject : AnyObject]?) throws {
         
         try coord.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: dbURL, options: nil)
         
@@ -111,7 +101,7 @@ struct CoreDataStack {
 // MARK:  - Removing data
 extension CoreDataStack  {
     
-    func dropAllData() throws{
+    func dropAllData() throws {
         // delete all the objects in the db. This won't delete the files, it will
         // just leave empty tables.
         try coordinator.destroyPersistentStoreAtURL(dbURL, withType:NSSQLiteStoreType , options: nil)
@@ -125,17 +115,16 @@ extension CoreDataStack  {
 // MARK:  - Batch processing in the background
 extension CoreDataStack{
     
-    
-    func performBackgroundBatchOperation(batch: BatchTask){
+    func performBackgroundBatchOperation(batch: BatchTask) {
         
-        backgroundContext.performBlock(){
+        backgroundContext.performBlock() {
             batch(workerContext: self.backgroundContext)
             
             // Save it to the parent context, so normal saving
             // can work
-            do{
+            do {
                 try self.backgroundContext.save()
-            }catch{
+            } catch {
                 fatalError("Error while saving backgroundContext: \(error)")
             }
         }
@@ -151,10 +140,9 @@ extension CoreDataStack {
         // Create temp coordinator
         let tmpCoord = NSPersistentStoreCoordinator(managedObjectModel: self.model)
         
-        
-        do{
+        do {
             try addStoreTo(coordinator: tmpCoord, storeType: NSSQLiteStoreType, configuration: nil, storeURL: dbURL, options: nil)
-        }catch{
+        } catch {
             fatalError("Error adding a SQLite Store: \(error)")
         }
         
@@ -164,22 +152,19 @@ extension CoreDataStack {
         moc.persistentStoreCoordinator = tmpCoord
         
         // Run the batch task, save the contents of the moc & notify
-        moc.performBlock(){
+        moc.performBlock() {
             batch(workerContext: moc)
             
             do {
                 try moc.save()
-            }catch{
+            } catch {
                 fatalError("Error saving importer moc: \(moc)")
             }
             
             let nc = NSNotificationCenter.defaultCenter()
-            let n = NSNotification(name: CoreDataStackNotifications.ImportingTaskDidFinish.rawValue,
-                object: nil)
+            let n = NSNotification(name: CoreDataStackNotifications.ImportingTaskDidFinish.rawValue, object: nil)
             nc.postNotification(n)
         }
-        
-        
         
     }
 }
@@ -194,20 +179,20 @@ extension CoreDataStack {
         // when it ends so we can call the next save (on the persisting
         // context). This last one might take some time and is done
         // in a background queue
-        context.performBlockAndWait(){
+        context.performBlockAndWait() {
             
-            if self.context.hasChanges{
-                do{
+            if self.context.hasChanges {
+                do {
                     try self.context.save()
-                }catch{
+                } catch {
                     fatalError("Error while saving main context: \(error)")
                 }
                 
                 // now we save in the background
-                self.persistingContext.performBlock(){
-                    do{
+                self.persistingContext.performBlock() {
+                    do {
                         try self.persistingContext.save()
-                    }catch{
+                    } catch {
                         fatalError("Error while saving persisting context: \(error)")
                     }
                 }

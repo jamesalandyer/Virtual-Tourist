@@ -11,25 +11,20 @@ import MapKit
 import CoreData
 
 
-class Pin: NSManagedObject {
+class Pin: NSManagedObject, MKAnnotation {
 
+    var coordinate: CLLocationCoordinate2D {
+        return CLLocationCoordinate2D(latitude: latitude as! Double, longitude: longitude as! Double)
+    }
+    
     convenience init(latitude: Double, longitude: Double, context: NSManagedObjectContext) {
         if let ent = NSEntityDescription.entityForName("Pin", inManagedObjectContext: context) {
             self.init(entity: ent, insertIntoManagedObjectContext: context)
-            self.latitude = latitude
-            self.longitude = longitude
+            self.latitude = NSNumber(double: latitude)
+            self.longitude = NSNumber(double: longitude)
         } else {
             fatalError("Unable to find Entity name!")
         }
-    }
-    
-    func convertToMapPin(pin: Pin) -> MKPointAnnotation {
-        let newPin = MKPointAnnotation()
-        
-        newPin.coordinate.latitude = Double(pin.latitude!)
-        newPin.coordinate.longitude = Double(pin.longitude!)
-        
-        return newPin
     }
 
 }
