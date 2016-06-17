@@ -10,6 +10,8 @@ import UIKit
 
 class AlbumVC: UIViewController {
 
+    var photoAlbum: String!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
