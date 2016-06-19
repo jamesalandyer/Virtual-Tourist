@@ -1,8 +1,8 @@
 //
-//  Album+CoreDataProperties.swift
+//  Photo+CoreDataProperties.swift
 //  Virtual Tourist
 //
-//  Created by James Dyer on 6/17/16.
+//  Created by James Dyer on 6/18/16.
 //  Copyright © 2016 James Dyer. All rights reserved.
 //
 //  Choose "Create NSManagedObject Subclass…" from the Core Data editor menu
@@ -12,11 +12,10 @@
 import Foundation
 import CoreData
 
-extension Album {
+extension Photo {
 
-    @NSManaged var creationDate: NSDate?
-    @NSManaged var name: String?
-    @NSManaged var images: NSSet?
+    @NSManaged var imageData: NSData?
+    @NSManaged var largeImageURL: String?
     @NSManaged var pin: Pin?
 
 }

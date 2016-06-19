@@ -2,17 +2,17 @@
 //  Pin.swift
 //  Virtual Tourist
 //
-//  Created by James Dyer on 6/16/16.
+//  Created by James Dyer on 6/18/16.
 //  Copyright © 2016 James Dyer. All rights reserved.
 //
 
 import Foundation
-import MapKit
 import CoreData
+import MapKit
 
 
 class Pin: NSManagedObject, MKAnnotation {
-
+    
     var coordinate: CLLocationCoordinate2D {
         return CLLocationCoordinate2D(latitude: latitude as! Double, longitude: longitude as! Double)
     }

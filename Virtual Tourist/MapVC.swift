@@ -18,17 +18,22 @@ class MapVC: UIViewController, MKMapViewDelegate {
     @IBOutlet weak var topNavItem: UINavigationItem!
     
     var longPress: UILongPressGestureRecognizer!
-    var places = [MKPointAnnotation]()
     var editMode = false
     
-    var fetchedResultsController : NSFetchedResultsController!
-    var stack: CoreDataStack!
+    var fetchedResultsController: NSFetchedResultsController!
+    
+    var downloadedImages: [[String: String]]!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        stack = delegate.stack
+        let stack = delegate.stack
+        
+        let fetchRequest = NSFetchRequest(entityName: "Pin")
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "latitude", ascending: true), NSSortDescriptor(key: "longitude", ascending: false)]
+        
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: stack.context, sectionNameKeyPath: nil, cacheName: nil)
         
         mapView.delegate = self
         
@@ -106,27 +111,19 @@ class MapVC: UIViewController, MKMapViewDelegate {
         let pin = view.annotation as! Pin
         
         if editMode {
-            stack.context.deleteObject(pin)
+            fetchedResultsController.managedObjectContext.deleteObject(pin)
             mapView.removeAnnotation(pin)
-            stack.save()
         } else {
-            performSegueWithIdentifier("showAlbum", sender: pin.album!)
+            performSegueWithIdentifier("showAlbum", sender: pin)
         }
     }
     
     func fetchAllPins() -> [Pin] {
-        let fetchRequest = NSFetchRequest(entityName: "Pin")
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "latitude", ascending: true), NSSortDescriptor(key: "longitude", ascending: false)]
+        attemptFetch(fetchedResultsController)
         
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: stack.context, sectionNameKeyPath: nil, cacheName: nil)
+        let allPins = fetchedResultsController.fetchedObjects as! [Pin]
         
-        do {
-            try fetchedResultsController.performFetch()
-        } catch let e as NSError {
-            print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController)")
-        }
-        
-        return fetchedResultsController.fetchedObjects as! [Pin]
+        return allPins
     }
     
     func addAnnotation(gestureRecognizer: UILongPressGestureRecognizer) {
@@ -138,18 +135,35 @@ class MapVC: UIViewController, MKMapViewDelegate {
             
             let pin = Pin(latitude: newCoordinates.latitude, longitude: newCoordinates.longitude, context: fetchedResultsController.managedObjectContext)
             
-            pin.album = Album(name: "Photo Album", context: fetchedResultsController.managedObjectContext)
+            FlickrClient.sharedInstance.getImagesForPin(pin, context: fetchedResultsController.managedObjectContext, completionHandler: { (success) in
+                if !success {
+                    //TODO: showError
+                }
+            })
             
             mapView.addAnnotation(pin)
-            
-            stack.save()
         }
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showAlbum" {
             if let albumVC = segue.destinationViewController as? AlbumVC {
-                albumVC.photoAlbum = sender as! Album
+                
+                let fetchRequest = NSFetchRequest(entityName: "Photo")
+                
+                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "imageData", ascending: false), NSSortDescriptor(key: "largeImageURL", ascending: true)]
+                
+                let pin = sender as! Pin
+                
+                let predicate = NSPredicate(format: "pin = %@", argumentArray: [pin])
+                
+                fetchRequest.predicate = predicate
+                
+                let fc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: fetchedResultsController.managedObjectContext, sectionNameKeyPath: nil, cacheName: nil)
+                
+                albumVC.fetchedResultsController = fc
+                
+                albumVC.pin = pin
             }
         }
     }

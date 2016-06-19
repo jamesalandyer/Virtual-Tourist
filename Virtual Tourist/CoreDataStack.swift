@@ -25,6 +25,7 @@ struct CoreDataStack {
     private let dbURL: NSURL
     private let persistingContext: NSManagedObjectContext
     private let backgroundContext: NSManagedObjectContext
+    
     let context: NSManagedObjectContext
     
     
@@ -40,7 +41,7 @@ struct CoreDataStack {
         self.modelURL = modelURL
         
         // Try to create the model from the URL
-        guard let model = NSManagedObjectModel(contentsOfURL: modelURL) else{
+        guard let model = NSManagedObjectModel(contentsOfURL: modelURL) else {
             print("unable to create a model from \(modelURL)")
             return nil
         }
@@ -110,6 +111,7 @@ extension CoreDataStack  {
         
         
     }
+    
 }
 
 // MARK:  - Batch processing in the background
@@ -129,6 +131,7 @@ extension CoreDataStack{
             }
         }
     }
+    
 }
 
 // MARK:  - Heavy processing in the background.
@@ -167,6 +170,7 @@ extension CoreDataStack {
         }
         
     }
+    
 }
 
 
@@ -201,12 +205,10 @@ extension CoreDataStack {
             }
         }
         
-        
-        
     }
     
     
-    func autoSave(delayInSeconds : Int){
+    func autoSave(delayInSeconds : Int) {
         
         if delayInSeconds > 0 {
             print("Autosaving")
@@ -220,6 +222,7 @@ extension CoreDataStack {
             })
             
         }
+        
     }
 }
 
