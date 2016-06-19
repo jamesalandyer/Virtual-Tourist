@@ -16,11 +16,12 @@ class PhotoCell: UICollectionViewCell {
     
     func configureCell(image: Photo) {
         
-        guard let newImage = image.imageData else { return }
+        if let imageData = image.imageData {
+            let convertImage = UIImage(data: imageData)
+            
+            photoImageView.image = convertImage
+            activityIndicator.stopAnimating()
+        }
         
-        guard let convertImage = UIImage(data: newImage) else { return }
-        
-        photoImageView.image = convertImage
-        activityIndicator.stopAnimating()
     }
 }

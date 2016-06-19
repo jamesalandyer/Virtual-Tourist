@@ -3,6 +3,7 @@
     <entity name="Photo" representedClassName=".Photo" syncable="YES">
         <attribute name="imageData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
         <attribute name="largeImageURL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="smallImageURL" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="pin" maxCount="1" deletionRule="Nullify" destinationEntity="Pin" inverseName="photos" inverseEntity="Pin" syncable="YES"/>
     </entity>
     <entity name="Pin" representedClassName=".Pin" syncable="YES">
@@ -12,6 +13,6 @@
     </entity>
     <elements>
         <element name="Pin" positionX="-27" positionY="18" width="128" height="88"/>
-        <element name="Photo" positionX="214" positionY="18" width="128" height="88"/>
+        <element name="Photo" positionX="214" positionY="18" width="128" height="103"/>
     </elements>
 </model>

@@ -23,8 +23,8 @@
 		2B21AD2E1D1639100055D286 /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2B21AD2C1D1639100055D286 /* Model.xcdatamodeld */; };
 		2B21AD331D163C960055D286 /* Pin+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B21AD2F1D163C960055D286 /* Pin+CoreDataProperties.swift */; };
 		2B21AD341D163C960055D286 /* Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B21AD301D163C960055D286 /* Pin.swift */; };
-		2B21AD351D163C960055D286 /* Photo+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B21AD311D163C960055D286 /* Photo+CoreDataProperties.swift */; };
 		2B21AD361D163C960055D286 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B21AD321D163C960055D286 /* Photo.swift */; };
+		2B21AD381D1664730055D286 /* Photo+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B21AD371D1664730055D286 /* Photo+CoreDataProperties.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,8 +46,8 @@
 		2B21AD2D1D1639100055D286 /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
 		2B21AD2F1D163C960055D286 /* Pin+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "Pin+CoreDataProperties.swift"; path = "../Pin+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		2B21AD301D163C960055D286 /* Pin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Pin.swift; path = ../Pin.swift; sourceTree = "<group>"; };
-		2B21AD311D163C960055D286 /* Photo+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "Photo+CoreDataProperties.swift"; path = "../Photo+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		2B21AD321D163C960055D286 /* Photo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Photo.swift; path = ../Photo.swift; sourceTree = "<group>"; };
+		2B21AD371D1664730055D286 /* Photo+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "Photo+CoreDataProperties.swift"; path = "../Photo+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,7 +155,7 @@
 			isa = PBXGroup;
 			children = (
 				2B21AD2F1D163C960055D286 /* Pin+CoreDataProperties.swift */,
-				2B21AD311D163C960055D286 /* Photo+CoreDataProperties.swift */,
+				2B21AD371D1664730055D286 /* Photo+CoreDataProperties.swift */,
 			);
 			name = Generated;
 			sourceTree = "<group>";
@@ -236,9 +236,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B21AD381D1664730055D286 /* Photo+CoreDataProperties.swift in Sources */,
 				2B21AD361D163C960055D286 /* Photo.swift in Sources */,
 				2B21ACE91D1360450055D286 /* FlickrConstants.swift in Sources */,
-				2B21AD351D163C960055D286 /* Photo+CoreDataProperties.swift in Sources */,
 				2B21ACDD1D12503E0055D286 /* AlbumVC.swift in Sources */,
 				2B21ACE11D1253410055D286 /* PhotoCell.swift in Sources */,
 				2B21AD341D163C960055D286 /* Pin.swift in Sources */,

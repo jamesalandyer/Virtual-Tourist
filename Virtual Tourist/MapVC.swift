@@ -135,11 +135,7 @@ class MapVC: UIViewController, MKMapViewDelegate {
             
             let pin = Pin(latitude: newCoordinates.latitude, longitude: newCoordinates.longitude, context: fetchedResultsController.managedObjectContext)
             
-            FlickrClient.sharedInstance.getImagesForPin(pin, context: fetchedResultsController.managedObjectContext, completionHandler: { (success) in
-                if !success {
-                    //TODO: showError
-                }
-            })
+            FlickrClient.sharedInstance.getImagesForPin(pin, context: fetchedResultsController.managedObjectContext)
             
             mapView.addAnnotation(pin)
         }
@@ -151,7 +147,7 @@ class MapVC: UIViewController, MKMapViewDelegate {
                 
                 let fetchRequest = NSFetchRequest(entityName: "Photo")
                 
-                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "imageData", ascending: false), NSSortDescriptor(key: "largeImageURL", ascending: true)]
+                fetchRequest.sortDescriptors = [NSSortDescriptor(key: "smallImageURL", ascending: false), NSSortDescriptor(key: "largeImageURL", ascending: true)]
                 
                 let pin = sender as! Pin
                 

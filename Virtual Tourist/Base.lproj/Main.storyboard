@@ -62,7 +62,7 @@
             </objects>
             <point key="canvasLocation" x="856" y="429"/>
         </scene>
-        <!--PhotoVC-->
+        <!--Photo-->
         <scene sceneID="Z9M-3m-vve">
             <objects>
                 <viewController id="mzC-pz-L8D" customClass="PhotoVC" customModule="Virtual_Tourist" customModuleProvider="target" sceneMemberID="viewController">
@@ -77,15 +77,25 @@
                             <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bPx-AV-FtE">
                                 <rect key="frame" x="0.0" y="64" width="600" height="536"/>
                             </imageView>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="2Qk-Iv-i8G">
+                                <rect key="frame" x="282" y="281" width="37" height="37"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="bPx-AV-FtE" secondAttribute="trailing" id="13Z-TF-anQ"/>
+                            <constraint firstItem="2Qk-Iv-i8G" firstAttribute="centerY" secondItem="LbC-n1-HoQ" secondAttribute="centerY" id="5Ox-Ae-1ML"/>
                             <constraint firstItem="bPx-AV-FtE" firstAttribute="leading" secondItem="LbC-n1-HoQ" secondAttribute="leading" id="YXF-YN-FJv"/>
                             <constraint firstItem="vRf-7V-e5h" firstAttribute="top" secondItem="bPx-AV-FtE" secondAttribute="bottom" id="adV-Hw-B01"/>
                             <constraint firstItem="bPx-AV-FtE" firstAttribute="top" secondItem="oN3-Hn-xWC" secondAttribute="bottom" id="k3F-v4-tdb"/>
+                            <constraint firstItem="2Qk-Iv-i8G" firstAttribute="centerX" secondItem="LbC-n1-HoQ" secondAttribute="centerX" id="n1z-vc-ghK"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" title="Photo" id="ret-Qi-w0x"/>
+                    <connections>
+                        <outlet property="activityIndicator" destination="2Qk-Iv-i8G" id="bM4-4i-2rH"/>
+                        <outlet property="photoImageView" destination="bPx-AV-FtE" id="ghP-1H-Y6f"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="5sM-vp-kyv" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -116,11 +126,17 @@
                                 </constraints>
                                 <items>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="gix-28-1G4"/>
-                                    <barButtonItem title="New Album" id="Wss-Wf-aDk"/>
+                                    <barButtonItem title="New Album" id="Wss-Wf-aDk">
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <connections>
+                                            <action selector="newAlbumButtonPressed:" destination="rsH-Ca-eAg" id="jSj-b5-TgU"/>
+                                        </connections>
+                                    </barButtonItem>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="uhu-3q-bva"/>
                                 </items>
+                                <color key="barTintColor" red="0.4039215686" green="0.2470588235" blue="0.70588235290000001" alpha="1" colorSpace="calibratedRGB"/>
                             </toolbar>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="N1M-vl-S4I">
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="N1M-vl-S4I">
                                 <rect key="frame" x="0.0" y="192" width="600" height="364"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="lUc-8H-Nne">
@@ -179,11 +195,17 @@
                     <navigationItem key="navigationItem" title="Photo Album" id="Mm0-z8-5Mq">
                         <barButtonItem key="rightBarButtonItem" title="Edit" id="VY0-pJ-hte">
                             <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                            <connections>
+                                <action selector="editButtonPressed:" destination="rsH-Ca-eAg" id="vd5-2P-eRx"/>
+                            </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="collectionView" destination="N1M-vl-S4I" id="JyX-Nt-Zl1"/>
+                        <outlet property="editButton" destination="VY0-pJ-hte" id="5wf-2a-rtP"/>
                         <outlet property="flowLayout" destination="lUc-8H-Nne" id="kaJ-eF-qJj"/>
+                        <outlet property="mapView" destination="5am-d9-Be6" id="e9K-qa-gSy"/>
+                        <outlet property="newAlbum" destination="Wss-Wf-aDk" id="7F8-F7-2Cb"/>
                         <segue destination="mzC-pz-L8D" kind="show" identifier="showPhoto" id="q5S-Fd-hNW"/>
                     </connections>
                 </viewController>

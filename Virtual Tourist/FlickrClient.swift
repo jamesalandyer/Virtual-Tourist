@@ -161,7 +161,7 @@ class FlickrClient {
         task.resume()
     }
     
-    func getImagesForPin(pin: Pin, context: NSManagedObjectContext, completionHandler: (success: Bool) -> Void) {
+    func getImagesForPin(pin: Pin, context: NSManagedObjectContext) {
         
         let methodParameters = [
             FlickrClient.Constants.FlickrParameterKeys.Method: FlickrClient.Constants.FlickrParameterValues.SearchMethod,
@@ -177,15 +177,29 @@ class FlickrClient {
         ]
             
         FlickrClient.sharedInstance.getImageURLsFromFlickrBySearch(methodParameters, completionHandler: { (photoURLs) in
+            let notif = NSNotification(name: "Failed", object: nil)
+            
             if let photoURLs = photoURLs {
                 for photo in photoURLs {
-                    let image = Photo(imageData: nil, largeImage: photo[FlickrClient.Constants.FlickrResponseKeys.LargeURL], context: context)
+                    let mainPhoto = photo[FlickrClient.Constants.FlickrResponseKeys.MediumURL]!
+                    let image = Photo(imageData: nil, smallImage: mainPhoto, largeImage: photo[FlickrClient.Constants.FlickrResponseKeys.LargeURL], context: context)
                     image.pin = pin
-                    image.smallImageURL = photo[FlickrClient.Constants.FlickrResponseKeys.MediumURL]
+                    self.taskForGETImage(mainPhoto, completionHandler: { (imageData, error) in
+                        guard error == nil else {
+                            NSNotificationCenter.defaultCenter().postNotification(notif)
+                            return
+                        }
+                        
+                        guard let imageData = imageData else {
+                            NSNotificationCenter.defaultCenter().postNotification(notif)
+                            return
+                        }
+                        
+                        image.imageData = imageData
+                    })
                 }
-                completionHandler(success: true)
             } else {
-                completionHandler(success: false)
+                NSNotificationCenter.defaultCenter().postNotification(notif)
             }
         })
     }

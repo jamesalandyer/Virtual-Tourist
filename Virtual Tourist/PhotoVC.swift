@@ -10,9 +10,36 @@ import UIKit
 
 class PhotoVC: UIViewController {
 
+    @IBOutlet weak var photoImageView: UIImageView!
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
+    var photo: Photo!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        if let imageURL = photo.largeImageURL {
+            FlickrClient.sharedInstance.taskForGETImage(imageURL) { (imageData, error) in
+                
+                guard error == nil else {
+                    //TODO: Error
+                    return
+                }
+                
+                guard let imageData = imageData else {
+                    //TODO: Error
+                    return
+                }
+                
+                performUIUpdatesOnMain {
+                    let convertImage = UIImage(data: imageData)
+                    
+                    self.photoImageView.image = convertImage
+                    self.activityIndicator.stopAnimating()
+                }
+                
+            }
+        }
         
     }
 

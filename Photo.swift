@@ -11,13 +11,12 @@ import CoreData
 
 
 class Photo: NSManagedObject {
-
-    var smallImageURL: String?
     
-    convenience init(imageData: NSData?, largeImage: String?, context: NSManagedObjectContext) {
-        if let ent = NSEntityDescription.entityForName("Image", inManagedObjectContext: context) {
+    convenience init(imageData: NSData?, smallImage: String, largeImage: String?, context: NSManagedObjectContext) {
+        if let ent = NSEntityDescription.entityForName("Photo", inManagedObjectContext: context) {
             self.init(entity: ent, insertIntoManagedObjectContext: context)
             self.imageData = imageData
+            self.smallImageURL = smallImage
             if largeImage != nil {
                 self.largeImageURL = largeImage!
             }
