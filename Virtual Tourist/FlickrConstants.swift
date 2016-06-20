@@ -34,7 +34,7 @@ extension FlickrClient {
         
         struct FlickrParameterValues {
             static let SearchMethod = "flickr.photos.search"
-            static let APIKey = "cdeab233081b79f3becc1a9fc685f024"
+            static let APIKey = "af3a2fcc27a79472e3e795655835e4bd"
             static let ResponseFormat = "json"
             static let DisableJSONCallback = "1"
             static let MediumURL = "url_m"

@@ -205,11 +205,18 @@ class FlickrClient {
                 
                 for photo in photoURLs {
                     let photoPath = photo[FlickrClient.Constants.FlickrResponseKeys.MediumURL]!
-                    let image = Photo(imageData: nil, smallImage: photoPath, largeImage: photo[FlickrClient.Constants.FlickrResponseKeys.LargeURL], context: context)
-                    image.pin = pin
+                    var image: Photo!
+                    
+                    performUIUpdatesOnMain {
+                        image = Photo(imageData: nil, smallImage: photoPath, largeImage: photo[FlickrClient.Constants.FlickrResponseKeys.LargeURL], context: context)
+                        image.pin = pin
+                    }
                     self.taskForGETImage(photoPath, completionHandler: { (imageData, error) in
                         if let imageData = imageData {
-                            image.imageData = imageData
+                            performUIUpdatesOnMain {
+                                image.imageData = imageData
+                            }
+                            
                         }
                     })
                 }
