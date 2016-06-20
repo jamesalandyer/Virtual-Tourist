@@ -12,24 +12,28 @@ import CoreData
 
 class MapVC: UIViewController, MKMapViewDelegate {
 
-    @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var editButton: UIBarButtonItem!
-    @IBOutlet weak var deleteLabel: UILabel!
-    @IBOutlet weak var topNavItem: UINavigationItem!
+    //Outlets
+    @IBOutlet weak private var mapView: MKMapView!
+    @IBOutlet weak private var editButton: UIBarButtonItem!
+    @IBOutlet weak private var deleteLabel: UILabel!
+    @IBOutlet weak private var topNavItem: UINavigationItem!
     
-    var longPress: UILongPressGestureRecognizer!
-    var editMode = false
+    //Properties
+    private var longPress: UILongPressGestureRecognizer!
+    private var editMode = false
     
     var sharedContext = CoreDataStack.stack.context
-    
     var fetchedResultsController: NSFetchedResultsController!
     
-    var downloadedImages: [[String: String]]!
+    private var downloadedImages: [[String: String]]!
+    
+    //MARK: - Stack
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         let fetchRequest = NSFetchRequest(entityName: "Pin")
+        
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "latitude", ascending: true), NSSortDescriptor(key: "longitude", ascending: false)]
         
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: sharedContext, sectionNameKeyPath: nil, cacheName: nil)
@@ -52,6 +56,8 @@ class MapVC: UIViewController, MKMapViewDelegate {
         mapView.addAnnotations(allPins)
     }
     
+    //MARK: - Actions
+    
     @IBAction func editButtonPressed(sender: AnyObject) {
         if editButton.title == "Edit" {
             editButton.title = "Done"
@@ -63,6 +69,8 @@ class MapVC: UIViewController, MKMapViewDelegate {
             editMode = false
         }
     }
+    
+    //MARK: - MapView
     
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
         
@@ -125,6 +133,11 @@ class MapVC: UIViewController, MKMapViewDelegate {
         }
     }
     
+    /**
+     Adds a annotation when a user presses and holds on the map, it then creates and downloads images from Flickr.
+     
+     - Parameter gestureRecognizer: A long press gesture recognizer for when the user presses.
+    */
     func addAnnotation(gestureRecognizer: UILongPressGestureRecognizer) {
         
         let touchPoint = gestureRecognizer.locationInView(mapView)
@@ -135,7 +148,7 @@ class MapVC: UIViewController, MKMapViewDelegate {
             let pin = Pin(latitude: newCoordinates.latitude, longitude: newCoordinates.longitude, context: fetchedResultsController.managedObjectContext)
             
             FlickrClient.sharedInstance.getImagesForPin(pin, context: sharedContext, completionHandler: { (error) in
-                if error == nil {
+                performUIUpdatesOnMain {
                     CoreDataStack.stack.save()
                 }
             })
@@ -143,6 +156,8 @@ class MapVC: UIViewController, MKMapViewDelegate {
             mapView.addAnnotation(pin)
         }
     }
+    
+    //MARK: - Segue
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showAlbum" {

@@ -11,6 +11,7 @@ import CoreData
 
 class PhotoCell: UICollectionViewCell {
     
+    //Properties
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var photoImageView: UIImageView!
     

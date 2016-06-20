@@ -80,13 +80,25 @@
                             <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="2Qk-Iv-i8G">
                                 <rect key="frame" x="290" y="290" width="20" height="20"/>
                             </activityIndicatorView>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Failed To Load" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ocb-G1-j6a">
+                                <rect key="frame" x="230.5" y="288" width="139" height="24"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="24" id="ab7-Am-eyM"/>
+                                    <constraint firstAttribute="width" constant="139" id="ned-RA-cxL"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="20"/>
+                                <color key="textColor" red="0.4039215686" green="0.2470588235" blue="0.70588235290000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="bPx-AV-FtE" secondAttribute="trailing" id="13Z-TF-anQ"/>
                             <constraint firstItem="2Qk-Iv-i8G" firstAttribute="centerY" secondItem="LbC-n1-HoQ" secondAttribute="centerY" id="5Ox-Ae-1ML"/>
+                            <constraint firstItem="ocb-G1-j6a" firstAttribute="centerY" secondItem="LbC-n1-HoQ" secondAttribute="centerY" id="YRI-Zo-1iz"/>
                             <constraint firstItem="bPx-AV-FtE" firstAttribute="leading" secondItem="LbC-n1-HoQ" secondAttribute="leading" id="YXF-YN-FJv"/>
                             <constraint firstItem="vRf-7V-e5h" firstAttribute="top" secondItem="bPx-AV-FtE" secondAttribute="bottom" id="adV-Hw-B01"/>
+                            <constraint firstItem="ocb-G1-j6a" firstAttribute="centerX" secondItem="LbC-n1-HoQ" secondAttribute="centerX" id="gjy-4m-Tio"/>
                             <constraint firstItem="bPx-AV-FtE" firstAttribute="top" secondItem="oN3-Hn-xWC" secondAttribute="bottom" id="k3F-v4-tdb"/>
                             <constraint firstItem="2Qk-Iv-i8G" firstAttribute="centerX" secondItem="LbC-n1-HoQ" secondAttribute="centerX" id="n1z-vc-ghK"/>
                         </constraints>
@@ -94,6 +106,7 @@
                     <navigationItem key="navigationItem" title="Photo" id="ret-Qi-w0x"/>
                     <connections>
                         <outlet property="activityIndicator" destination="2Qk-Iv-i8G" id="bM4-4i-2rH"/>
+                        <outlet property="failedLabel" destination="ocb-G1-j6a" id="70l-qi-oua"/>
                         <outlet property="photoImageView" destination="bPx-AV-FtE" id="ghP-1H-Y6f"/>
                     </connections>
                 </viewController>

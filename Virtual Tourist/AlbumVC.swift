@@ -12,23 +12,27 @@ import MapKit
 
 class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, NSFetchedResultsControllerDelegate, MKMapViewDelegate {
 
-    @IBOutlet weak var collectionView: UICollectionView!
-    @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
-    @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var editButton: UIBarButtonItem!
-    @IBOutlet weak var newAlbum: UIBarButtonItem!
-    @IBOutlet weak var noPhotosLabel: UILabel!
+    //Outlets
+    @IBOutlet weak private var collectionView: UICollectionView!
+    @IBOutlet weak private var flowLayout: UICollectionViewFlowLayout!
+    @IBOutlet weak private var mapView: MKMapView!
+    @IBOutlet weak private var editButton: UIBarButtonItem!
+    @IBOutlet weak private var newAlbum: UIBarButtonItem!
+    @IBOutlet weak private var noPhotosLabel: UILabel!
     
+    //Properties
     var pin: Pin!
-    var editMode = false
-    var selectedItems = [NSIndexPath]()
+    private var editMode = false
+    private var selectedItems = [NSIndexPath]()
     
-    var insertedIndexPaths: [NSIndexPath]!
-    var deletedIndexPaths: [NSIndexPath]!
-    var updatedIndexPaths: [NSIndexPath]!
+    private var insertedIndexPaths: [NSIndexPath]!
+    private var deletedIndexPaths: [NSIndexPath]!
+    private var updatedIndexPaths: [NSIndexPath]!
     
     var fetchedResultsController: NSFetchedResultsController!
     var sharedContext = CoreDataStack.stack.context
+    
+    //MARK: - Stack
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,6 +47,12 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: sharedContext, sectionNameKeyPath: nil, cacheName: nil)
         
+        do {
+            try fetchedResultsController.performFetch()
+        } catch let error as NSError {
+            print("Error while trying to perform a search: \n\(error)\n\(fetchedResultsController)")
+        }
+        
         fetchedResultsController.delegate = self
         collectionView.delegate = self
         collectionView.dataSource = self
@@ -55,23 +65,22 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         
         establishFlowLayout()
         mapView.addAnnotation(pin)
-        
-        do {
-            try fetchedResultsController.performFetch()
-        } catch let error as NSError {
-            print("Error while trying to perform a search: \n\(error)\n\(fetchedResultsController)")
-        }
     }
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
+        noPhotosLabel.hidden = true
         
         collectionView.reloadData()
+        
         if collectionView.numberOfItemsInSection(0) == 0 {
             self.noPhotosLabel.text = "No Photos To Show"
             noPhotosLabel.hidden = false
+            editButton.enabled = false
         }
     }
+    
+    //MARK: - Actions
     
     @IBAction func editButtonPressed(sender: AnyObject) {
         if editButton.title == "Edit" {
@@ -92,22 +101,31 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         }
     }
     
-    @IBAction func newAlbumButtonPressed(sender: AnyObject) {
+    @IBAction func newAlbumButtonPressed(sender: AnyObject)  {
         if newAlbum.title == "New Album" {
+            allowInteraction(false)
             self.noPhotosLabel.hidden = true
             deleteAllPhotos()
+            
             FlickrClient.sharedInstance.getImagesForPin(pin, context: sharedContext, completionHandler: { (error) in
-                if error != nil {
-                    if error!.code == 1 {
-                        self.noPhotosLabel.text = "Error Downloading Photos"
-                        self.noPhotosLabel.hidden = false
-                    } else if error!.code == 2 {
-                        self.noPhotosLabel.text = "No Photos To Show"
-                        self.noPhotosLabel.hidden = false
+                performUIUpdatesOnMain {
+                    if error != nil {
+                        self.editButton.enabled = false
+                        if error!.code == 1 {
+                            self.noPhotosLabel.text = "Error Downloading Photos"
+                            self.noPhotosLabel.hidden = false
+                        } else if error!.code == 2 {
+                            self.noPhotosLabel.text = "No Photos To Show"
+                            self.noPhotosLabel.hidden = false
+                        }
+                        
+                    } else {
+                        self.editButton.enabled = true
+                        CoreDataStack.stack.save()
+                        self.collectionView.reloadData()
                     }
-                } else {
-                    CoreDataStack.stack.save()
-                    self.collectionView.reloadData()
+                    
+                    self.allowInteraction(true)
                 }
             })
         } else {
@@ -115,7 +133,10 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         }
     }
     
-    func establishFlowLayout() {
+    /**
+     Sets the flow layout for the collection view cells.
+     */
+    private func establishFlowLayout() {
         let space: CGFloat = 0
         let width = self.view.frame.width
         let dimensions = width / 3.0
@@ -124,6 +145,18 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         flowLayout.minimumLineSpacing = space
         flowLayout.itemSize = CGSizeMake(dimensions, dimensions)
     }
+    
+    /**
+     Allows the user to tap the edit button and new album button.
+     
+     - Parameter allow: A Bool of whether to allow user interaction.
+     */
+    private func allowInteraction(allow: Bool) {
+        editButton.enabled = allow
+        newAlbum.enabled = allow
+    }
+    
+    //MARK: - CollectionView
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return fetchedResultsController.sections![section].numberOfObjects
@@ -145,6 +178,7 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
     
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         if editMode {
+            //Allows user selection
             let cell = collectionView.cellForItemAtIndexPath(indexPath)!
             if cell.alpha == 1.0 {
                 cell.alpha = 0.5
@@ -158,9 +192,12 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
                 selectedItems.removeAtIndex(index)
             }
         } else {
+            //If not in edit mode show the user the larger photo
             performSegueWithIdentifier("showPhoto", sender: fetchedResultsController.objectAtIndexPath(indexPath))
         }
     }
+    
+    //MARK: - MapView
     
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
         let reuseId = "userPin"
@@ -188,7 +225,12 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         mapView.setRegion(region, animated: true)
     }
     
-    func deletePhotos() {
+    //MARK: - Delete
+    
+    /**
+     Deletes the user selected photos from the shared NSManagedObjectContext.
+    */
+    private func deletePhotos() {
         var photosToDelete = [Photo]()
         
         for indexPath in selectedItems {
@@ -202,13 +244,18 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         selectedItems = [NSIndexPath]()
     }
     
-    func deleteAllPhotos() {
+    /**
+     Deletes all the photos from the shared NSManagedObjectContext.
+     */
+    private func deleteAllPhotos() {
         
         for photo in fetchedResultsController.fetchedObjects as! [Photo] {
             sharedContext.deleteObject(photo)
         }
         
     }
+    
+    //MARK: - NSFetchedControllerDelegate
     
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
         insertedIndexPaths = [NSIndexPath]()
@@ -248,7 +295,11 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
             }
             
             }, completion: nil)
+        
+        CoreDataStack.stack.save()
     }
+    
+    //MARK: - Segue
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showPhoto" {

@@ -15,6 +15,12 @@ class FlickrClient {
     
     static let sharedInstance = FlickrClient()
     
+    /**
+     Gets a random page from searching Flickr at the url with the methodParameters.
+     
+     - Parameter methodParameters: Parameters to search for on Flickr.
+     - Parameter completionHandler: An array of dictionaries with the photo's large and medium url.
+    */
     private func getImageURLsFromFlickrBySearch(methodParameters: [String:AnyObject], completionHandler: Completed) {
         
         let session = NSURLSession.sharedSession()
@@ -75,6 +81,13 @@ class FlickrClient {
         task.resume()
     }
     
+    /**
+     Gets the url for photos with the methodParameters and on a certain page, gets the medium and large url.
+     
+     - Parameter methodParameters: Parameters to search for on Flickr.
+     - Parameter withPageNumber: The specific page number to get urls from.
+     - Parameter completionHandler: An array of dictionaries with the photo's large and medium url.
+     */
     private func getImageURLsFromFlickrBySearch(methodParameters: [String:AnyObject], withPageNumber: Int, completionHandler: Completed) {
         
         var methodParametersWithPageNumber = methodParameters
@@ -141,12 +154,10 @@ class FlickrClient {
                     }
                     
                     guard let imageUrlString = photo[Constants.FlickrResponseKeys.MediumURL] as? String else {
-                        displayError("Cannot find key '\(Constants.FlickrResponseKeys.MediumURL)' in \(photo)")
                         continue
                     }
                     
                     guard let largeImageUrlString = photo[Constants.FlickrResponseKeys.LargeURL] as? String else {
-                        displayError("Cannot find key '\(Constants.FlickrResponseKeys.LargeURL)' in \(photo)")
                         continue
                     }
                     
@@ -162,6 +173,13 @@ class FlickrClient {
         task.resume()
     }
     
+    /**
+     Gets the photos urls, downloads the image and creates the image in the NSManagedObjectContext.
+     
+     - Parameter pin: The pin the images are for.
+     - Parameter context: The NSManagedObjectContext to add the photos to.
+     - Parameter completionHandler: (Optional) Passes an error if it occured.
+     */
     func getImagesForPin(pin: Pin, context: NSManagedObjectContext, completionHandler: (error: NSError?) -> Void) {
         
         let methodParameters = [
@@ -202,6 +220,14 @@ class FlickrClient {
         })
     }
     
+    /**
+     Downloads an image from the internet.
+     
+     - Parameter filePath: The file path for the image to be downloaded.
+     - Parameter completionHandler: (Optional) Passes the image data if it was successful and passes an error if it occured.
+     
+     - Returns: NSURLSessionTask of the current downloading task.
+     */
     func taskForGETImage(filePath: String, completionHandler: (imageData: NSData?, error: NSError?) -> Void) -> NSURLSessionTask {
         let session = NSURLSession.sharedSession()
         
@@ -240,6 +266,13 @@ class FlickrClient {
         return task
     }
     
+    /**
+     Gets the photos urls, downloads the image and creates the image in the NSManagedObjectContext.
+     
+     - Parameter parameters: Parameters to add to the url.
+     
+     - Returns: NSURL of the new url created.
+     */
     private func flickrURLFromParameters(parameters: [String:AnyObject]) -> NSURL {
         
         let components = NSURLComponents()
