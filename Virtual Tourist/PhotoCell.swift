@@ -21,6 +21,9 @@ class PhotoCell: UICollectionViewCell {
             
             photoImageView.image = convertImage
             activityIndicator.stopAnimating()
+        } else {
+            photoImageView.image = UIImage(named: "default_image.png")
+            activityIndicator.startAnimating()
         }
         
     }

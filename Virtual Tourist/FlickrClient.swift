@@ -66,8 +66,9 @@ class FlickrClient {
                 return
             }
             
-            let pageLimit = min(totalPages, 80)
+            let pageLimit = min(totalPages, 40)
             let randomPage = Int(arc4random_uniform(UInt32(pageLimit))) + 1
+            
             self.getImageURLsFromFlickrBySearch(methodParameters, withPageNumber: randomPage, completionHandler: completionHandler)
         }
         
@@ -80,7 +81,7 @@ class FlickrClient {
         methodParametersWithPageNumber[Constants.FlickrParameterKeys.Page] = withPageNumber
         
         let session = NSURLSession.sharedSession()
-        let request = NSURLRequest(URL: flickrURLFromParameters(methodParameters))
+        let request = NSURLRequest(URL: flickrURLFromParameters(methodParametersWithPageNumber))
         
         let task = session.dataTaskWithRequest(request) { (data, response, error) in
             
@@ -161,7 +162,7 @@ class FlickrClient {
         task.resume()
     }
     
-    func getImagesForPin(pin: Pin, context: NSManagedObjectContext) {
+    func getImagesForPin(pin: Pin, context: NSManagedObjectContext, completionHandler: (error: NSError?) -> Void) {
         
         let methodParameters = [
             FlickrClient.Constants.FlickrParameterKeys.Method: FlickrClient.Constants.FlickrParameterValues.SearchMethod,
@@ -177,29 +178,26 @@ class FlickrClient {
         ]
             
         FlickrClient.sharedInstance.getImageURLsFromFlickrBySearch(methodParameters, completionHandler: { (photoURLs) in
-            let notif = NSNotification(name: "Failed", object: nil)
-            
             if let photoURLs = photoURLs {
+                
+                guard photoURLs.count > 0 else {
+                    completionHandler(error: NSError(domain: "NoPhotos", code: 2, userInfo: nil))
+                    return
+                }
+                
                 for photo in photoURLs {
-                    let mainPhoto = photo[FlickrClient.Constants.FlickrResponseKeys.MediumURL]!
-                    let image = Photo(imageData: nil, smallImage: mainPhoto, largeImage: photo[FlickrClient.Constants.FlickrResponseKeys.LargeURL], context: context)
+                    let photoPath = photo[FlickrClient.Constants.FlickrResponseKeys.MediumURL]!
+                    let image = Photo(imageData: nil, smallImage: photoPath, largeImage: photo[FlickrClient.Constants.FlickrResponseKeys.LargeURL], context: context)
                     image.pin = pin
-                    self.taskForGETImage(mainPhoto, completionHandler: { (imageData, error) in
-                        guard error == nil else {
-                            NSNotificationCenter.defaultCenter().postNotification(notif)
-                            return
+                    self.taskForGETImage(photoPath, completionHandler: { (imageData, error) in
+                        if let imageData = imageData {
+                            image.imageData = imageData
                         }
-                        
-                        guard let imageData = imageData else {
-                            NSNotificationCenter.defaultCenter().postNotification(notif)
-                            return
-                        }
-                        
-                        image.imageData = imageData
                     })
                 }
+                completionHandler(error: nil)
             } else {
-                NSNotificationCenter.defaultCenter().postNotification(notif)
+                completionHandler(error: NSError(domain: "DownloadFailed", code: 1, userInfo: nil))
             }
         })
     }

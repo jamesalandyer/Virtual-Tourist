@@ -10,27 +10,43 @@ import UIKit
 import CoreData
 import MapKit
 
-class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, NSFetchedResultsControllerDelegate {
+class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, NSFetchedResultsControllerDelegate, MKMapViewDelegate {
 
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var editButton: UIBarButtonItem!
     @IBOutlet weak var newAlbum: UIBarButtonItem!
+    @IBOutlet weak var noPhotosLabel: UILabel!
     
     var pin: Pin!
     var editMode = false
     var selectedItems = [NSIndexPath]()
     
+    var insertedIndexPaths: [NSIndexPath]!
+    var deletedIndexPaths: [NSIndexPath]!
+    var updatedIndexPaths: [NSIndexPath]!
+    
     var fetchedResultsController: NSFetchedResultsController!
-    var fetchedResultsProcessingOperations: [NSBlockOperation] = []
+    var sharedContext = CoreDataStack.stack.context
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        let fetchRequest = NSFetchRequest(entityName: "Photo")
+        
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "smallImageURL", ascending: false), NSSortDescriptor(key: "largeImageURL", ascending: true)]
+        
+        let predicate = NSPredicate(format: "pin = %@", argumentArray: [pin])
+        
+        fetchRequest.predicate = predicate
+        
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: sharedContext, sectionNameKeyPath: nil, cacheName: nil)
+        
         fetchedResultsController.delegate = self
         collectionView.delegate = self
         collectionView.dataSource = self
+        mapView.delegate = self
         
         collectionView.allowsSelection = true
         collectionView.allowsMultipleSelection = false
@@ -38,15 +54,23 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .Plain, target: nil, action: nil)
         
         establishFlowLayout()
-        attemptFetch(fetchedResultsController)
+        mapView.addAnnotation(pin)
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(showError), name: "Failed", object: nil)
+        do {
+            try fetchedResultsController.performFetch()
+        } catch let error as NSError {
+            print("Error while trying to perform a search: \n\(error)\n\(fetchedResultsController)")
+        }
     }
     
-    override func viewWillDisappear(animated: Bool) {
-        super.viewWillDisappear(animated)
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
         
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        collectionView.reloadData()
+        if collectionView.numberOfItemsInSection(0) == 0 {
+            self.noPhotosLabel.text = "No Photos To Show"
+            noPhotosLabel.hidden = false
+        }
     }
     
     @IBAction func editButtonPressed(sender: AnyObject) {
@@ -70,18 +94,24 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
     
     @IBAction func newAlbumButtonPressed(sender: AnyObject) {
         if newAlbum.title == "New Album" {
-            
-        } else {
-            if selectedItems.count > 0 {
-                collectionView.performBatchUpdates({
-                    for item in self.selectedItems {
-                        print("HERE")
-                        let photo = self.fetchedResultsController.objectAtIndexPath(item) as! Photo
-                        self.fetchedResultsController.managedObjectContext.deleteObject(photo)
-                        self.collectionView.numberOfItemsInSection(0)
+            self.noPhotosLabel.hidden = true
+            deleteAllPhotos()
+            FlickrClient.sharedInstance.getImagesForPin(pin, context: sharedContext, completionHandler: { (error) in
+                if error != nil {
+                    if error!.code == 1 {
+                        self.noPhotosLabel.text = "Error Downloading Photos"
+                        self.noPhotosLabel.hidden = false
+                    } else if error!.code == 2 {
+                        self.noPhotosLabel.text = "No Photos To Show"
+                        self.noPhotosLabel.hidden = false
                     }
-                }, completion: nil)
-            }
+                } else {
+                    CoreDataStack.stack.save()
+                    self.collectionView.reloadData()
+                }
+            })
+        } else {
+            deletePhotos()
         }
     }
     
@@ -124,66 +154,100 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
             if cell.alpha == 0.5 {
                 selectedItems.append(indexPath)
             } else {
-                for (index, item) in selectedItems.enumerate() {
-                    if item == indexPath {
-                        selectedItems.removeAtIndex(index)
-                    }
-                }
+                let index = selectedItems.indexOf(indexPath)!
+                selectedItems.removeAtIndex(index)
             }
         } else {
             performSegueWithIdentifier("showPhoto", sender: fetchedResultsController.objectAtIndexPath(indexPath))
         }
     }
     
-    func showError() {
-        print("error")
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+        let reuseId = "userPin"
+        
+        var pinView = mapView.dequeueReusableAnnotationViewWithIdentifier(reuseId) as? MKPinAnnotationView
+        
+        if pinView == nil {
+            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
+            pinView!.canShowCallout = false
+            pinView!.pinTintColor = purpleColor
+        }
+        else {
+            pinView!.annotation = annotation
+        }
+        
+        return pinView
     }
     
-    func deleteCells() {
-        collectionView.deleteItemsAtIndexPaths(selectedItems)
-        selectedItems = []
-        let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        let stack = delegate.stack
-        stack.save()
+    func mapView(mapView: MKMapView, didAddAnnotationViews views: [MKAnnotationView]) {
+        let pin = views[0].annotation?.coordinate
+        
+        let span = MKCoordinateSpanMake(0.7, 0.7)
+        
+        let region = MKCoordinateRegionMake(pin!, span)
+        mapView.setRegion(region, animated: true)
     }
     
-    private func addFetchedResultsProcessingBlock(processingBlock: (Void) -> Void) {
-        fetchedResultsProcessingOperations.append(NSBlockOperation(block: processingBlock))
+    func deletePhotos() {
+        var photosToDelete = [Photo]()
+        
+        for indexPath in selectedItems {
+            photosToDelete.append(fetchedResultsController.objectAtIndexPath(indexPath) as! Photo)
+        }
+        
+        for photo in photosToDelete {
+            sharedContext.deleteObject(photo)
+        }
+        
+        selectedItems = [NSIndexPath]()
+    }
+    
+    func deleteAllPhotos() {
+        
+        for photo in fetchedResultsController.fetchedObjects as! [Photo] {
+            sharedContext.deleteObject(photo)
+        }
+        
     }
     
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
-        fetchedResultsProcessingOperations.removeAll(keepCapacity: false)
+        insertedIndexPaths = [NSIndexPath]()
+        deletedIndexPaths = [NSIndexPath]()
+        updatedIndexPaths = [NSIndexPath]()
     }
     
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
         
         switch type {
         case .Update:
-            addFetchedResultsProcessingBlock { self.collectionView.reloadItemsAtIndexPaths([indexPath!]) }
-        default:
+            updatedIndexPaths.append(indexPath!)
+        case .Delete:
+            deletedIndexPaths.append(indexPath!)
+        case .Insert:
+            insertedIndexPaths.append(newIndexPath!)
+        case .Move:
             break
         }
+        
     }
     
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
         
-        if selectedItems.count > 0 {
-            deleteCells()
-        } else {
-            collectionView.performBatchUpdates({ () -> Void in
-                for operation in self.fetchedResultsProcessingOperations {
-                    operation.start()
-                }
-                }, completion: nil)
-        }
-    }
-    
-    deinit {
-        for operation in fetchedResultsProcessingOperations {
-            operation.cancel()
-        }
-        
-        fetchedResultsProcessingOperations.removeAll()
+        collectionView.performBatchUpdates({ 
+            
+            for indexPath in self.insertedIndexPaths {
+                self.collectionView.insertItemsAtIndexPaths([indexPath])
+            }
+            
+            for indexPath in self.deletedIndexPaths {
+                self.collectionView.deleteItemsAtIndexPaths([indexPath])
+            }
+            
+            for indexPath in self.updatedIndexPaths {
+                self.collectionView.reloadItemsAtIndexPaths([indexPath])
+            }
+            
+            }, completion: nil)
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {

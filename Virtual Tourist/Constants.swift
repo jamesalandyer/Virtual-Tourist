@@ -11,14 +11,6 @@ import CoreData
 
 let purpleColor = UIColor(red: 103.0 / 255.0, green: 63.0 / 255.0, blue: 180.0 / 255.0, alpha: 1)
 
-func attemptFetch(fetchedResultsController: NSFetchedResultsController) {
-    do {
-        try fetchedResultsController.performFetch()
-    } catch let error as NSError {
-        print("Error while trying to perform a search: \n\(error)\n\(fetchedResultsController)")
-    }
-}
-
 func performUIUpdatesOnMain(updates: () -> Void) {
     dispatch_async(dispatch_get_main_queue()) {
         updates()
